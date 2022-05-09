@@ -1,0 +1,20 @@
+#!/bin/bash
+# Deployment steps
+
+echo "Pulling changes from GitHub"
+RESULT=$(git pull)
+GOOD="Already up to date."
+
+if [ "$RESULT" != "$GOOD" ]
+then
+    echo "Building uberjar"
+    lein uberjar
+fi
+
+echo "Killing existing screens"
+killall screen
+
+echo "Starting server"
+\cp target/uberjar/steam-deck-badges-0.1.0-SNAPSHOT.jar ~/steam-deck-badges.jar
+cd ~
+screen -dm java -jar steam-deck-badges.jar port 8080
