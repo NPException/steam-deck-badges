@@ -3,6 +3,7 @@
   :dependencies [[org.clojure/clojure "1.11.0"]
                  [org.clojure/data.json "2.4.0"]
                  [http-kit "2.6.0-alpha1"]
+                 [metosin/reitit "0.5.18"]
                  [hickory "0.7.1"]
                  [org.clojure/data.json "2.4.0"]
                  ;; java dependencies

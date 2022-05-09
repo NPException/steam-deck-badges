@@ -86,9 +86,11 @@
               (write-to-bytes)))))))
 
 
+(def cache-duration (.toSeconds TimeUnit/DAYS 1))
+
 (def ^:private ^Cache compatibility-level-cache
   (-> (Caffeine/newBuilder)
-      (.expireAfterWrite 1 TimeUnit/DAYS)
+      (.expireAfterWrite cache-duration TimeUnit/SECONDS)
       (.build)))
 
 (defn ^:private find-deck-compatibility-level
@@ -125,7 +127,7 @@
 (defn badge-for-app
   [app-id size]
   (-> (deck-compatibility-level app-id)
-      (badge-bytes size)))
+      (badge-bytes (or size 54))))
 
 
 
