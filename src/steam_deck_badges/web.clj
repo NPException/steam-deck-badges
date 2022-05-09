@@ -65,15 +65,17 @@
        first))
 
 
-(defn load-html [url]
+(defn load-html [url-or-request]
   (some->
-    (http/request {:method :get :url url})
+    (http/request (if (string? url-or-request)
+                    {:method :get :url url-or-request}
+                    url-or-request))
     deref
     :body))
 
 
-(defn load-hiccup [url]
+(defn load-hiccup [url-or-request]
   (some->
-    url
+    url-or-request
     load-html
     parse-html))
