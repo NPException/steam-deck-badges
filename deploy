@@ -15,6 +15,6 @@ echo "Killing existing screens"
 killall screen
 
 echo "Starting server"
-\cp target/uberjar/steam-deck-badges-0.1.0-SNAPSHOT.jar ~/steam-deck-badges.jar
+\cp target/uberjar/steam-deck-badges-0.1.0-SNAPSHOT-standalone.jar ~/steam-deck-badges.jar
 cd ~
 screen -dm java -jar steam-deck-badges.jar port 8081
