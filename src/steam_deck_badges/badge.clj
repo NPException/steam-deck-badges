@@ -8,15 +8,16 @@
            (java.util.concurrent ConcurrentHashMap TimeUnit)
            (java.util.function Function)
            (javax.imageio ImageIO)
-           (com.github.benmanes.caffeine.cache Cache Caffeine)))
+           (com.github.benmanes.caffeine.cache Cache Caffeine)
+           (java.net URL)))
 
 (defn ^:private new-image
   ^BufferedImage [w h]
   (BufferedImage. w h BufferedImage/TYPE_INT_ARGB))
 
 (defn ^:private load-image
-  ^BufferedImage [file]
-  (ImageIO/read (io/file file)))
+  ^BufferedImage [^URL img-url]
+  (ImageIO/read img-url))
 
 
 (defmulti ^:private badge-img identity)
