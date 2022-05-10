@@ -9,8 +9,8 @@
   [{:keys [path-params query-params] :as _request}]
   (let [app-id (:app-id path-params)
         size   (parse-long (get query-params "size" ""))]
-    (if-let [badge-bytes (-> (parse-long app-id)
-                             (badge/badge-for-app size))]
+    (if-let [badge-bytes (some-> (parse-long app-id)
+                                 (badge/badge-for-app size))]
       {:status  200
        :headers {"Content-Type"  "image/png"
                  "Cache-Control" (str "public, immutable, max-age=" badge/cache-duration-seconds)}
@@ -20,7 +20,7 @@
 (def ^:private router
   (ring/router
     [[["/compatibility-badge/{app-id}.png" {:name :route/compatibility-badge
-                                            :get  {:handler    compatibility-badge}}]]]))
+                                            :get  {:handler compatibility-badge}}]]]))
 
 (def ^:private ring-handler
   (ring/ring-handler
@@ -44,9 +44,9 @@
 (defn -main
   "starts the server on a given :port (default 8080)"
   [& {:strs [port debug]
-      :or   {port "8080"
+      :or   {port  "8080"
              debug "true"}
-      :as _args}]
+      :as   _args}]
   (server/run-server
     ((-> mw-params/wrap-params
          (cond-> (parse-boolean debug) (comp wrap-log-request)))
