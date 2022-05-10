@@ -23,14 +23,33 @@
                                             :get  {:handler    compatibility-badge}}]]]))
 
 (def ^:private ring-handler
-  (ring/ring-handler router))
+  (ring/ring-handler
+    router
+    (ring/create-default-handler)))
+
+(defn ^:private print-request [req]
+  (print "Request: ")
+  (prn (select-keys req [:server-name :server-port :uri :query-string :scheme :request-method])))
+
+(defn ^:private wrap-log-request
+  [handler]
+  (fn
+    ([request]
+     (print-request request)
+     (handler request))
+    ([request respond raise]
+     (print-request request)
+     (handler request respond raise))))
 
 (defn -main
   "starts the server on a given :port (default 8080)"
-  [& {:strs [port]
-      :or   {port "8080"} :as _args}]
+  [& {:strs [port debug]
+      :or   {port "8080"
+             debug "true"}
+      :as _args}]
   (server/run-server
-    (mw-params/wrap-params
-      #'ring-handler)
+    ((-> mw-params/wrap-params
+         (cond-> (parse-boolean debug) (comp wrap-log-request)))
+     #'ring-handler)
     {:port (Integer/parseInt port)})
   (println "Started server at port" port))
