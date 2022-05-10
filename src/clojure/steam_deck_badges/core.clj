@@ -13,7 +13,7 @@
                              (badge/badge-for-app size))]
       {:status  200
        :headers {"Content-Type"  "image/png"
-                 "Cache-Control" (str "public, immutable, max-age=" badge/cache-duration)}
+                 "Cache-Control" (str "public, immutable, max-age=" badge/cache-duration-seconds)}
        :body    badge-bytes}
       {:status 404})))
 

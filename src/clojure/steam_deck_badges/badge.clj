@@ -9,7 +9,8 @@
            (java.util.function Function)
            (javax.imageio ImageIO)
            (com.github.benmanes.caffeine.cache Cache Caffeine)
-           (java.net URL)))
+           (java.net URL)
+           (de.npcomplete.throttle Throttle)))
 
 (defn ^:private new-image
   ^BufferedImage [w h]
@@ -87,19 +88,26 @@
               (write-to-bytes)))))))
 
 
-(def cache-duration (.toSeconds TimeUnit/DAYS 1))
+(def cache-duration-seconds (.toSeconds TimeUnit/DAYS 1))
 
 (def ^:private ^Cache compatibility-level-cache
   (-> (Caffeine/newBuilder)
-      (.expireAfterWrite cache-duration TimeUnit/SECONDS)
+      (.expireAfterWrite cache-duration-seconds TimeUnit/SECONDS)
       (.build)))
+
+(def ^:private ^Throttle throttle (Throttle. 100 1 TimeUnit/MINUTES)) ;; burst rate limit to 100 requests per minute
+
+(defn ^:private load-steam-page
+  [app-id]
+  (.fetch throttle
+    #(web/load-hiccup {:method  :get
+                       :url     (str "https://store.steampowered.com/app/" app-id)
+                       :headers {"Cookie" "wants_mature_content=1; birthtime=0; lastagecheckage=1-1-1970"}})))
 
 (defn ^:private find-deck-compatibility-level
   "Scrapes Steam to determine the Steam-Deck compatibility level for the given app-id."
   [app-id]
-  (let [page        (web/load-hiccup {:method  :get
-                                      :url     (str "https://store.steampowered.com/app/" app-id)
-                                      :headers {"Cookie" "wants_mature_content=1; birthtime=0; lastagecheckage=1-1-1970"}})
+  (let [page        (load-steam-page app-id)
         compat-data (some-> (web/search page :div {:id "application_config"})
                             second
                             :data-deckcompatibility

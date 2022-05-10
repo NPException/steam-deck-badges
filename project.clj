@@ -8,6 +8,8 @@
                  [org.clojure/data.json "2.4.0"]
                  ;; java dependencies
                  [com.github.ben-manes.caffeine/caffeine "3.1.0"]]
+  :source-paths      ["src/clojure"]
+  :java-source-paths ["src/java"]
   :main ^:skip-aot steam-deck-badges.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all
