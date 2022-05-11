@@ -8,7 +8,7 @@
            (java.util.concurrent ConcurrentHashMap TimeUnit)
            (java.util.function Function)
            (javax.imageio ImageIO)
-           (com.github.benmanes.caffeine.cache Cache Caffeine)
+           (com.github.benmanes.caffeine.cache Cache Caffeine Expiry)
            (java.net URL)
            (de.npcomplete.throttle Throttle)))
 
@@ -88,11 +88,33 @@
               (write-to-bytes)))))))
 
 
-(def cache-duration-seconds (.toSeconds TimeUnit/DAYS 1))
+(def ^:private one-day-in-nanos
+  (.toNanos TimeUnit/DAYS 1))
+
+(def one-day-in-seconds
+  (.toSeconds TimeUnit/NANOSECONDS one-day-in-nanos))
+
+(def ^:private three-days-in-nanos
+  (.toNanos TimeUnit/DAYS 3))
+
+(def ^:private seven-days-in-nanos
+  (.toNanos TimeUnit/DAYS 7))
+
+(def ^:private fourteen-days-in-nanos
+  (.toNanos TimeUnit/DAYS 14))
 
 (def ^:private ^Cache compatibility-level-cache
   (-> (Caffeine/newBuilder)
-      (.expireAfterWrite cache-duration-seconds TimeUnit/SECONDS)
+      (.expireAfter (reify Expiry
+                      (expireAfterCreate [_ _key value _ct]
+                        ;; choose cache expiry depending on how often the compatibility level is likely to change
+                        (case value
+                          :verified fourteen-days-in-nanos
+                          :playable seven-days-in-nanos
+                          :unsupported three-days-in-nanos
+                          one-day-in-nanos))
+                      (expireAfterUpdate [_ _key _value _ct cd] cd)
+                      (expireAfterRead [_ _key _value _ct cd] cd)))
       (.build)))
 
 (def ^:private ^Throttle throttle (Throttle. 100 1 TimeUnit/MINUTES)) ;; burst rate limit to 100 requests per minute
