@@ -71,21 +71,27 @@
   ^BufferedImage [^BufferedImage img ^long new-height]
   (scale-image img (/ (double new-height) (.getHeight img))))
 
+(defn ^:private clamp
+  [^long x ^long min ^long max]
+  (cond
+    (< x min) min
+    (> x max) max
+    :else x))
 
 (def ^:private ^ConcurrentHashMap badge-cache (ConcurrentHashMap.))
 
 (defn ^:private badge-bytes
   "Returns PNG image bytes for a given badge compatibility type and size."
   [type size]
-  (when (and (#{:verified :playable :unsupported :unknown} type)
-             (<= 20 size 54))
-    (.computeIfAbsent badge-cache
-      [type size]
-      (reify Function
-        (apply [_ _key]
-          (-> (badge-img type)
-              (resize-image size)
-              (write-to-bytes)))))))
+  (when (#{:verified :playable :unsupported :unknown} type)
+    (let [size (clamp size 20 54)]
+      (.computeIfAbsent badge-cache
+        [type size]
+        (reify Function
+          (apply [_ _key]
+            (-> (badge-img type)
+                (resize-image size)
+                (write-to-bytes))))))))
 
 
 (def ^:private one-day-in-nanos

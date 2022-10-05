@@ -45,11 +45,11 @@
   "starts the server on a given :port (default 8080)"
   [& {:strs [port debug]
       :or   {port  "8080"
-             debug "true"}
+             debug "false"}
       :as   _args}]
+  (println "Starting server at port" port)
   (server/run-server
     ((-> mw-params/wrap-params
          (cond-> (parse-boolean debug) (comp wrap-log-request)))
      #'ring-handler)
-    {:port (Integer/parseInt port)})
-  (println "Started server at port" port))
+    {:port (Integer/parseInt port)}))
