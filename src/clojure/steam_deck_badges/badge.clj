@@ -138,8 +138,9 @@
   (let [page        (load-steam-page app-id)
         compat-data (some-> (web/search page :div {:id "application_config"})
                             second
-                            :data-deckcompatibility
+                            :data-hardwarecompatibility
                             (json/read-str))
+        ; NOTE: compat data also contains info about Steam Frame, Steam Machine, and Steam OS compatibilities
         category    (get compat-data "resolved_category" -1)]
     (case (int category)
       1 :unsupported
